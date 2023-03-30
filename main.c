@@ -48,6 +48,7 @@ int main(void)
 
 
     // Timer_A1 konfigurieren
+    // 0 - 26 Duty cycle
         TB0CCR0 = 25;             // PWM-Frequenz (in diesem Beispiel 1 kHz)
         TB0CCTL1 = OUTMOD_7;        // Timer_A3 im Modus 7: PWM setzen/resetzen
         TB0CCTL2 = OUTMOD_7;
@@ -112,7 +113,8 @@ __interrupt void SHDN(void)
 __interrupt void pwmm(void)
 {
     TB0CTL &= ~TBIFG;       //clears interrupt flag
-    TB0CCR1 = 20;
-    TB0CCR2 = 0;
+    // only change the CCR2 value here
+    TB0CCR1 = 26;
+    TB0CCR2 = 36;
 
 }

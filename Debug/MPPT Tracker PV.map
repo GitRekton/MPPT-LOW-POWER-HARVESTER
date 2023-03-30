@@ -1,7 +1,7 @@
 ******************************************************************************
                   MSP430 Linker PC v21.6.1                     
 ******************************************************************************
->> Linked Mon Mar 27 00:28:22 2023
+>> Linked Mon Mar 27 17:54:19 2023
 
 OUTPUT FILE NAME:   <MPPT Tracker PV.out>
 ENTRY POINT SYMBOL: "_c_int00_noinit_noargs_mpu"  address: 00004460
@@ -19,7 +19,7 @@ MEMORY CONFIGURATION
   INFOB                 00001900   00000080  00000000  00000080  RWIX
   INFOA                 00001980   00000080  00000000  00000080  RWIX
   RAM                   00001c00   00000800  000000a0  00000760  RWIX
-  FRAM                  00004400   0000bb80  00000090  0000baf0  RWIX
+  FRAM                  00004400   0000bb80  00000092  0000baee  RWIX
   JTAGSIGNATURE         0000ff80   00000004  00000004  00000000  RWIX  ffff 
   BSLSIGNATURE          0000ff84   00000004  00000004  00000000  RWIX  ffff 
   IPESIGNATURE          0000ff88   00000008  00000008  00000000  RWIX  ffff 
@@ -116,12 +116,12 @@ section   page    origin      length       input sections
 *          0    00004400    00000000     UNINITIALIZED
 
 .text:_isr 
-*          0    00004400    00000090     
+*          0    00004400    00000092     
                   00004400    00000034     main.obj (.text:_isr:COUT)
                   00004434    0000002c     main.obj (.text:_isr:SHDN)
                   00004460    00000018     rts430x_lc_rd_eabi.lib : boot.c.obj (.text:_isr:_c_int00_noinit_noargs_mpu)
-                  00004478    00000010     main.obj (.text:_isr:pwmm)
-                  00004488    00000008     rts430x_lc_rd_eabi.lib : isr_trap.asm.obj (.text:_isr:__TI_ISR_TRAP)
+                  00004478    00000012     main.obj (.text:_isr:pwmm)
+                  0000448a    00000008     rts430x_lc_rd_eabi.lib : isr_trap.asm.obj (.text:_isr:__TI_ISR_TRAP)
 
 .stack     0    00002360    000000a0     UNINITIALIZED
                   00002360    00000004     rts430x_lc_rd_eabi.lib : boot.c.obj (.stack)
@@ -235,9 +235,9 @@ MODULE SUMMARY
        Module             code   ro data   rw data
        ------             ----   -------   -------
     .\
-       main.obj           262    6         0      
+       main.obj           264    6         0      
     +--+------------------+------+---------+---------+
-       Total:             262    6         0      
+       Total:             264    6         0      
                                                   
     C:\ti\ccs1220\ccs\ccs_base\msp430\lib\FR59xx\MSPMPU_INIT_LIB_CCS_msp430_large_code_restricted_data.lib
        mpu_init.o         44     0         0      
@@ -276,7 +276,7 @@ MODULE SUMMARY
                                                   
        Stack:             0      0         160    
     +--+------------------+------+---------+---------+
-       Grand Total:       348    52        160    
+       Grand Total:       350    52        160    
 
 
 GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name 
@@ -1070,7 +1070,7 @@ address   name
 00004400  __TI_CINIT_Base           
 00004400  __TI_CINIT_Limit          
 00004400  __TI_CINIT_Warm           
-00004488  __TI_ISR_TRAP             
+0000448a  __TI_ISR_TRAP             
 0000ffcc  __TI_int30                
 0000ffce  __TI_int31                
 0000ffd0  __TI_int32                
@@ -1920,7 +1920,7 @@ address   name
 00004434  SHDN                      
 00004460  _c_int00_noinit_noargs_mpu
 00004478  pwmm                      
-00004488  __TI_ISR_TRAP             
+0000448a  __TI_ISR_TRAP             
 0000a501  mpu_ctl0_value            
 0000ffcc  __TI_int30                
 0000ffce  __TI_int31                
