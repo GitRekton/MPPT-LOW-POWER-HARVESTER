@@ -79,7 +79,7 @@ int main(void)
     ADC12CTL0 = ADC12SHT0_10+ADC12ON; //512 ADCLKs for S&H
     ADC12CTL1 = ADC12SHP+ADC12SSEL_3+ADC12CONSEQ_0+ADC12PDIV_3; //SMCLK:  ADC12SSEL_3, DIV 4: ADC12PDIV_3,
     ADC12CTL2 = ADC12RES_2;         // 12 Bit Res
-    ADC12CTL3 = ADC12CSTARTADD_10;
+
     ADC12MCTL10 = ADC12VRSEL_0 + ADC12INCH_10; //VR+=AVCC VR-=AVSS
     ADC12MCTL7  = ADC12VRSEL_0 + ADC12INCH_7;
 
@@ -87,12 +87,20 @@ int main(void)
 
     while(1)
     {
-        ADC12CTL0 |= ADC12SC+ADC12ENC;
-                while((ADC12CTL0&ADC12SC)==ADC12SC){};
+        ADC12CTL3 = ADC12CSTARTADD_7;
+        ADC12CTL0 |= ADC12SC + ADC12ENC;   // Start Conversion + Enable Conversion
+                while((ADC12CTL0 & ADC12SC)==ADC12SC){};
                 ADC12CTL0 &= ~ADC12ENC;
 
+
+                VBAT = ((float) ADC12MEM7 /  4096)*  3.6 * 5;
+
+                ADC12CTL3 = ADC12CSTARTADD_10;
+                        ADC12CTL0 |= ADC12SC + ADC12ENC;   // Start Conversion + Enable Conversion
+                                while((ADC12CTL0 & ADC12SC)==ADC12SC){};
+                                ADC12CTL0 &= ~ADC12ENC;
         VOC = ((float) ADC12MEM10 /  4096)*  3.6;
-        VBAT = ((float) ADC12MEM7 /  4096)*  3.6;
+
 
 
                 /*
