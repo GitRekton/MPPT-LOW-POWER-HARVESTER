@@ -49,7 +49,7 @@ int main(void)
     CSCTL4 &= ~LFXTOFF;
 
 
-    //Wait for init of LFXT
+    //Wait for init of LFXT 32kHz?
     do
     {
         CSCTL5 &= ~LFXTOFFG;
@@ -87,19 +87,9 @@ int main(void)
 
     while(1)
     {
-        ADC12CTL3 = ADC12CSTARTADD_7;
-        ADC12CTL0 |= ADC12SC + ADC12ENC;   // Start Conversion + Enable Conversion
-                while((ADC12CTL0 & ADC12SC)==ADC12SC){};
-                ADC12CTL0 &= ~ADC12ENC;
 
 
-                VBAT = ((float) ADC12MEM7 /  4096)*  3.6 * 5;
 
-                ADC12CTL3 = ADC12CSTARTADD_10;
-                        ADC12CTL0 |= ADC12SC + ADC12ENC;   // Start Conversion + Enable Conversion
-                                while((ADC12CTL0 & ADC12SC)==ADC12SC){};
-                                ADC12CTL0 &= ~ADC12ENC;
-        VOC = ((float) ADC12MEM10 /  4096)*  3.6;
 
 
 
@@ -119,27 +109,29 @@ __interrupt void COUT(void)
      P1IFG &= ~BIT6;        // Clear IFG P1.6
      TA0CTL &= ~TAIFG;       //clears interrupt flag
 
-     if ( P1IES )  //DISCHARGE
+     //if ( (P1OUT & BIT4) == BIT4 )  //DISCHARGE
+     if ( P1IES )
      {
-         P1IES = 0x00;         // Switching  the Rising edge
-         P1OUT |= BIT4;         // Discharge
-         TA0CTL |= TACLR;       // Reset Timer
+         P1OUT |= BIT4;         // Discharge -> SHDN = 1
+         P1IES = 0x00;     // 0x00    // Switching  the falling? edge select
+         TA0CTL|= TACLR;       // Reset Timer
+
      }
      else   // CHARGE
      {
-         P1IES = 0xFF;         // Switching  the Falling edge
+         P1IES = 0xFF; //0xFF;         // Switching  the Falling edge select
          cycle ++;             // Counting Cycle up to 200
 
 
-         if (cycle > 200 )
+         if (cycle > 20 )
          {
              cycle = 0;
              P1IE  &= ~BIT6;         // Disable the Interrupt on P1.6
              TA0CCR0 = 6 * TA0R;     // lengthen the TA0CCR0 to get OCV of Solar Panel
          }
-         else if (cycle <= 200)
+         else if (cycle <= 20)
          {
-             P1OUT &= ~BIT4;       // no Discharge
+             P1OUT &= ~BIT4;       // CHARGE -> SHDN = VCC
          }
      }
 
@@ -151,40 +143,55 @@ __interrupt void COUT(void)
 __interrupt void SHDN(void)
 {
 
+    float VMPP = 0.0;
     TA0CTL &= ~TAIFG;       //clears interrupt flag
     P1IFG &= ~BIT6;        // Clear IFG P1.6
-    //TA0CTL |= TACLR;  resets the timer
+
 
     TA0CCR0 = 64000;
 
-    if ( P1IES )  //DISCHARGE
+    if (!( (P1OUT & BIT4) == BIT4  ))  //DISCHARGE
     {
         P1IES = 0x00;         // Switching  the Rising edge
         P1OUT |= BIT4;         // Discharge
-        TA0CTL |= TACLR;       // Reset Timer
+        //TA0CTL |= TACLR;       // Reset Timer
     }
     else   //CHARGING
     {
-        // Gathering ADC Value of Vin
-        ADC12CTL0 |= ADC12SC+ADC12ENC;
-        while((ADC12CTL0&ADC12SC)==ADC12SC){};
+
+
+        // Gathering A7 Voltage VBAT
+        ADC12CTL3 = ADC12CSTARTADD_7;
+        ADC12CTL0 |= ADC12SC + ADC12ENC;   // Start Conversion + Enable Conversion
+        while((ADC12CTL0 & ADC12SC)==ADC12SC){};
         ADC12CTL0 &= ~ADC12ENC;
 
-//        if (ADC12MEM10 >= )    // Batterie über 4.2V
-//        {
-//            P1IE &= ~BIT6;
-//        }
-//        //
-//        else if (ADC12MEM10 < )  //Batterie unter 4.2V
-//        {
-//            //VOC = ADC(A10)
-//
-//        };
+        VBAT = ((float) ADC12MEM7 /  4096)*  4.5 ;  // 1,25 * 3,6
+
+        if (VBAT >= 4.2)    // Batterie über 4.2V
+        {
+            P1IE &= ~BIT6;
+        }
+        //
+        else if (VBAT < 4.2)  //Batterie unter 4.2V
+        {
+            //VOC = ADC(A10)
+            ADC12CTL3 = ADC12CSTARTADD_10;
+            ADC12CTL0 |= ADC12SC + ADC12ENC;   // Start Conversion + Enable Conversion
+            while((ADC12CTL0 & ADC12SC)==ADC12SC){};
+            ADC12CTL0 &= ~ADC12ENC;
+            VOC = ((float) ADC12MEM10 /  4096)*  3.6;
+
+            // TBCCR2(OPWM) = ( OPWM - 1 ) / ( 0.9 / 25 )
+            VMPP = VOC * 0.8;
+            TB0CCR2 = (int) (( 27.78 * VMPP ) - 27.78);
+            P1OUT &= ~BIT4;         // SHDN PIN LOW to activate CONV
+            P1IES |= BIT6;          //
+            P1IE  |= BIT6;
 
 
-        P1IES = 0xFF;         // Switching  the Falling edge
+        };
 
-        P1OUT &= ~BIT4;// no Discharge
 
     }
 }
@@ -195,6 +202,6 @@ __interrupt void pwmm(void)
     TB0CTL &= ~TBIFG;       //clears interrupt flag
     // only change the CCR2 value here
     TB0CCR1 = 0;
-    TB0CCR2 = 20;
+    //TB0CCR2 = 10;
 
 }
