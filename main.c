@@ -184,15 +184,14 @@ __interrupt void SHDN(void)
 
             // TBCCR2(OPWM) = ( OPWM - 1 ) / ( 0.9 / 25 )
             VMPP = VOC * 0.8;
+
+            // TB0CCR2 ( V ) = 25/0.9 * V - 27.78;
+
             TB0CCR2 = (int) (( 27.78 * VMPP ) - 27.78);
             P1OUT &= ~BIT4;         // SHDN PIN LOW to activate CONV
             P1IES |= BIT6;          //
             P1IE  |= BIT6;
-
-
-        };
-
-
+        }
     }
 }
 
